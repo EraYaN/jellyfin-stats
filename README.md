@@ -1,5 +1,27 @@
 # jellyfin-stats
-A quick and dirty tool to get some codec info from your Jellyfin Server library
+A quick and dirty tool to get some media stats from your Jellyfin Server library
+
+## Install (conda)
+
+Use this is you have a working install of conda or mamba.
+
+```
+conda env create -f envrionment.yml
+```
+
+## Install (mkvirtualenv)
+
+```
+mkvirtualenv -r requirements.txt jellyfin-stats
+```
+
+## Install (venv+pip)
+
+```
+python -m venv ./jellyfin-stats
+source ./jellyfin-stats/bin/activate
+pip install -r requirements.txt
+```
 
 ## Usage
 
