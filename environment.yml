@@ -1,0 +1,10 @@
+name: jellyfin-stats
+channels:
+  - anaconda
+  - default
+dependencies:
+  - pandas
+  - requests
+  - tqdm
+  - python=3.7
+  - numpy
