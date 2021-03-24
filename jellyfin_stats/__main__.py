@@ -39,7 +39,7 @@ if __name__ == "__main__":
     stats_parser.add_argument('-i', '--input-dir', default=Path("."), metavar="DIR", type=Path, help="The input directory.")
     all_kinds = [name for _, name, _ in pkgutil.iter_modules(['jellyfin_stats/stats'])] + ['none']
     default_kinds = all_kinds
-    stats_parser.add_argument('-k', '--kinds', default=default_kinds, action=SplitArgs, help="The various kinds of statistics", choices=all_kinds)
+    stats_parser.add_argument('-k', '--kinds', default=default_kinds, action=SplitArgs, help=f"The various kinds of statistics ({', '.join(all_kinds)})")
 
     search_parser = subparsers.add_parser("search", description="Searches processed data based on stream or item columns.")
     search_parser.add_argument('-i', '--input-dir', default=Path("."), metavar="DIR", type=Path, help="The input directory.")
