@@ -1,0 +1,46 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Search",
+            "type": "python",
+            "request": "launch",
+            "module": "jellyfin_stats",
+            "args": [
+                "search",
+                "-i",
+                "./data/blackbox",
+                "base.Id==0008d916f9eff7d725d9c1f71e8a24cb"
+            ]
+        },
+        {
+            "name": "Gather",
+            "type": "python",
+            "request": "launch",
+            "module": "jellyfin_stats",
+            "args": [
+                "gatherdata",
+                "-s",
+                "http://server.blackbox:8096",
+                "-k",
+                "628b40e9955943b18c5ab4c7168e2e29",
+                "-o",
+                "./data/blackbox"
+            ]
+        },
+        {
+            "name": "Analyze",
+            "type": "python",
+            "request": "launch",
+            "module": "jellyfin_stats",
+            "args": [
+                "analyze",
+                "-i",
+                "./data/blackbox"
+            ]
+        }
+    ]
+}

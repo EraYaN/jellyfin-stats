@@ -3,14 +3,22 @@ from jellyfin_stats.jellyfin.data import JellyfinData
 from jellyfin_stats.process.processor import DataProcessor
 from jellyfin_stats.stats.basic import BasicStats
 from jellyfin_stats.stats.combinations import CombinationsStats
+from jellyfin_stats.stats.specific import SpecificStats
+from jellyfin_stats.process.search import SearchExpr
+from jellyfin_stats.common import DEBUG
 
 from pathlib import Path
+import pandas as pd
 import pkgutil
 import argparse
 
 class SplitArgs(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         setattr(namespace, self.dest, values.split(','))
+
+class Expr(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        setattr(namespace, self.dest, list(map(lambda v:SearchExpr(v),values)))
 
 if __name__ == "__main__":
  
@@ -29,9 +37,13 @@ if __name__ == "__main__":
 
     stats_parser = subparsers.add_parser("analyze", description="Analyzes and outputs all stats from saved data.")
     stats_parser.add_argument('-i', '--input-dir', default=Path("."), metavar="DIR", type=Path, help="The input directory.")
-    all_kinds = [name for _, name, _ in pkgutil.iter_modules(['jellyfin_stats/stats'])]
+    all_kinds = [name for _, name, _ in pkgutil.iter_modules(['jellyfin_stats/stats'])] + ['none']
     default_kinds = all_kinds
     stats_parser.add_argument('-k', '--kinds', default=default_kinds, action=SplitArgs, help="The various kinds of statistics", choices=all_kinds)
+
+    search_parser = subparsers.add_parser("search", description="Searches processed data based on stream or item columns.")
+    search_parser.add_argument('-i', '--input-dir', default=Path("."), metavar="DIR", type=Path, help="The input directory.")
+    search_parser.add_argument('expr', nargs='+', metavar="EXPR", action=Expr, help="Multiple (AND) base.<col>=value or streams.<col>=value")
     
     args = parser.parse_args()
 
@@ -53,6 +65,12 @@ if __name__ == "__main__":
 
         data.process()
 
+        if DEBUG:
+            print("The DTypes of the two data frames")
+            print("base", data.df.dtypes)
+
+            print("streams",data.df_streams.dtypes)
+
         if 'basic' in args.kinds:
             stats = BasicStats(data)
 
@@ -63,3 +81,40 @@ if __name__ == "__main__":
             stats_comb = CombinationsStats(data)
 
             stats_comb.print()
+
+        if 'specific' in args.kinds:
+
+            stats_specific = SpecificStats(data)
+
+            stats_specific.print()
+    elif args.command == 'search':
+        data = JellyfinData.load(args.input_dir)
+
+        data = DataProcessor(data)
+
+        data.process()
+
+        for expr in args.expr:
+            data = expr.apply(data)
+            if DEBUG:
+                print("Result after applying expression",expr)
+                print("Left DF:\n",data.df)
+                print("Right DF:\n",data.df_streams)
+            
+
+        #df_streams_grouped = data.df_streams.groupby(level="Id")
+
+        if DEBUG:
+            print("Left DF:\n",data.df)
+            print("Right DF:\n",data.df_streams)
+
+        merged = pd.merge(
+            data.df,
+            data.df_streams,
+            how="inner",
+            on="IdIdx",
+            suffixes = ('', '_stream'),
+            validate="one_to_many")
+
+        print(merged)
+

@@ -1,42 +1,5 @@
 DEBUG=False
 
-all_kinds = [
-"AggregateFolder",
-"Audio",
-"AudioBook",
-"BasePluginFolder",
-"Book",
-"BoxSet",
-"Channel",
-"ChannelFolderItem",
-"CollectionFolder",
-"Episode",
-"Folder",
-"Genre",
-"ManualPlaylistsFolder",
-"Movie",
-"MusicAlbum",
-"MusicArtist",
-"MusicGenre",
-"MusicVideo",
-"Person",
-"Photo",
-"PhotoAlbum",
-"Playlist",
-"Program",
-"Recording",
-"Season",
-"Series",
-"Studio",
-"Trailer",
-"TvChannel",
-"TvProgram",
-"UserRootFolder",
-"UserView",
-"Video",
-"Year"
-]
-
 single_item_kinds = [
 "Audio",
 "AudioBook",
