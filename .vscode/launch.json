@@ -12,8 +12,8 @@
             "args": [
                 "search",
                 "-i",
-                "./data/blackbox",
-                "base.Id==0008d916f9eff7d725d9c1f71e8a24cb"
+                "./data",
+                "streams.Language==und streams.Type==Audio"
             ]
         },
         {
@@ -28,7 +28,7 @@
                 "-k",
                 "628b40e9955943b18c5ab4c7168e2e29",
                 "-o",
-                "./data/blackbox"
+                "./data"
             ]
         },
         {
@@ -39,7 +39,7 @@
             "args": [
                 "analyze",
                 "-i",
-                "./data/blackbox"
+                "./data"
             ]
         }
     ]

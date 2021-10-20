@@ -11,6 +11,7 @@ from pathlib import Path
 import pandas as pd
 import pkgutil
 import argparse
+import os.path
 
 class SplitArgs(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
@@ -43,6 +44,8 @@ if __name__ == "__main__":
 
     search_parser = subparsers.add_parser("search", description="Searches processed data based on stream or item columns.")
     search_parser.add_argument('-i', '--input-dir', default=Path("."), metavar="DIR", type=Path, help="The input directory.")
+    search_parser.add_argument('-o', '--output-file', default=Path("./search_results.txt"), metavar="FILE", type=Path, help="The output file (TXT, CSV, XLSX, HTML, MARKDOWN, SQL, JSON, PICKLE, PARQUET) make sure to install required dependencies.")
+    
     search_parser.add_argument('expr', nargs='+', metavar="EXPR", action=Expr, help="Multiple (AND) base.<col>=value or streams.<col>=value")
     
     args = parser.parse_args()
@@ -118,3 +121,23 @@ if __name__ == "__main__":
 
         print(merged)
 
+        if args.output_file:
+            print(f"Writing result to {args.output_file}")
+            if args.output_file.suffix == '.csv':
+                merged.to_csv(args.output_file)
+            elif args.output_file.suffix == '.xlsx':
+                merged.to_excel(args.output_file)
+            elif args.output_file.suffix == '.html' or args.output_file.suffix == '.htm':
+                merged.to_html(args.output_file)
+            elif args.output_file.suffix == '.json':
+                merged.to_json(args.output_file)
+            elif args.output_file.suffix == '.md':
+                merged.to_markdown(args.output_file)
+            elif args.output_file.suffix == '.sql':
+                merged.to_sql(args.output_file)
+            elif args.output_file.suffix == '.pkl' or args.output_file.suffix == '.pickle':
+                merged.to_pickle(args.output_file)
+            elif args.output_file.suffix == '.parquet':
+                merged.to_parquet(args.output_file)
+            else:
+                merged.to_string(args.output_file)

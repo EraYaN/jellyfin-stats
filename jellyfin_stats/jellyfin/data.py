@@ -4,7 +4,7 @@ from pathlib import Path
 
 class JellyfinData():
     def __init__(self):
-        self.columns = ['Id', 'Name', 'Container', 'Type', 'RunTimeTicks', 'VideoType','IsoType','LocationType','HasSubtitles','OfficialRating','ProductionYear']
+        self.columns = ['Id', 'Name', 'Container', 'Type', 'Path', 'RunTimeTicks', 'VideoType','IsoType','LocationType','HasSubtitles','OfficialRating','ProductionYear']
         self.columns_streams =  ['AspectRatio', 'AverageFrameRate', 'BitDepth',
                             'BitRate','Codec','CodecTimeBase',
                             'DisplayTitle', 'Height', 'Index',

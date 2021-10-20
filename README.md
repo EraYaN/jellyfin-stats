@@ -1,12 +1,12 @@
 # jellyfin-stats
-A quick and dirty tool to get some media stats from your Jellyfin Server library
+A quick and dirty tool to get some media stats from your Jellyfin Server library and to run simple queries on that data.
 
 ## Install (conda)
 
 Use this is you have a working install of conda or mamba.
 
 ```
-conda env create -f envrionment.yml
+conda env create -f environment.yml
 ```
 
 ## Install (mkvirtualenv)
@@ -55,4 +55,6 @@ Example: Find all videos with a height greater then or equal to 11440 pixels.
 ```bash
 python -m jellyfin_stats search -i ./data streams.Type==Video streams.Height>=1440
 ```
+This command support many of the output formats pandas supports (detected from the file extension), but you might need to install optional dependencies for some formats.
 
+Currently: TXT, CSV, XLSX, HTML, MARKDOWN, SQL, JSON, PICKLE, PARQUET
