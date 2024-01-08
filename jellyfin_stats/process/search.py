@@ -1,9 +1,10 @@
 import re
 import pandas as pd
 from jellyfin_stats.common import DEBUG
+import logging
 
 class SearchExpr():
-    REGEX = r"^(?P<data>base|streams)\.(?P<column>[^=]+)(?P<operator>==|>|<|!=|<=|>=)(?P<value>.*)$"
+    REGEX = r"^(?P<data>base|streams)\.(?P<column>[^=\s]+)\s?(?P<operator>==|>|<|!=|<=|>=|in|not in)\s?(?P<value>.*)$"
     def __init__(self, expr):
         match = re.match(self.REGEX, expr)
         if not match:
@@ -12,7 +13,12 @@ class SearchExpr():
         self.data = match.group('data')
         self.column = match.group('column')
         self.operator = match.group('operator')
-        self.value = match.group('value')
+        if self.operator in ['in','not in']:
+            self.value = [x.strip() for x in match.group('value').split(',')]
+        else:
+            self.value = match.group('value')
+    
+        logging.info("Init Search Expr: %s", self.__dict__)
 
 
     def apply(self, data):
@@ -44,6 +50,10 @@ class SearchExpr():
             is_expr = df[self.column]<=value
         elif self.operator == ">=":
             is_expr = df[self.column]>=value
+        elif self.operator == "in":
+            is_expr = df[self.column].isin(self.value)
+        elif self.operator == "not in":
+            is_expr = ~df[self.column].isin(self.value)
         else:
             raise ValueError(f"Expr operator {self.operator} is not yet supported.")
 

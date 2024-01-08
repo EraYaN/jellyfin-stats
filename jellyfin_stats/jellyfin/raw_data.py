@@ -30,6 +30,9 @@ class JellyfinRawData():
         self.all_items = {}
 
     def gather(self):
+        
+        ids = {}
+        ref = {}
         for itemtype in single_item_kinds:
             start_index = 0
             limit = 1000
@@ -38,16 +41,17 @@ class JellyfinRawData():
             response = requests.get(f'{self.hostname}/Users/{self.user_id}/Items?IncludeItemTypes={itemtype}&Recursive=True&startIndex={start_index}&limit=0', auth=self.auth)
             if response:
                 payload = response.json()
-                print("Items payload:\n", payload)
+                logging.debug("Items payload:\n%s", payload)
                 total = payload['TotalRecordCount']
                 if total > 0:
                     pbar = tqdm(total=total, desc=f"Loading {itemtype}", unit='items', unit_scale=True, leave=True, dynamic_ncols=True)
                     pbar.update(0)
                     while total > start_index:
-                        pbar.write(f"Getting {itemtype} from {start_index} to {start_index+limit}")
+                        #pbar.write(f"Getting {itemtype} from {start_index} to {start_index+limit}")
                         response = requests.get(f'{self.hostname}/Users/{self.user_id}/Items?IncludeItemTypes={itemtype}&Recursive=True&Fields=MediaStreams,Path&startIndex={start_index}&limit={limit}&enableTotalRecordCount=false', auth=self.auth)
                         if response:
                             payload = response.json()
+                            
                             items.extend(payload['Items'])
                             start_index += len(payload['Items'])
                             pbar.update(len(payload['Items']))
@@ -55,9 +59,27 @@ class JellyfinRawData():
                             break
 
                     pbar.close()
+            for item in items:
+                itemid = item['Id']
+                prev = ids.get(itemid, 0)
+                
+                if itemid not in ref:
+                    ref[itemid] = []
+                item['_itemtype'] = itemtype
+                ref[itemid].append(item)
+                ids[itemid] = prev + 1
+            
+            
             
             if len(items) > 0:
                 self.all_items[itemtype] = items
                 if DEBUG:
                     # Print an example
                     pprint(items[0])
+        logging.info("Items: %d Uniques: %d",len(items),len(ids))
+        for itemid in ids:
+            if ids[itemid] > 1:
+                logging.info(f"Duplicate id %s found %d times",itemid, ids[itemid])
+                for refitem in ref[itemid]:
+                    logging.info("ItemType: %s, MediaType: %s, Path: %s", refitem['_itemtype'],refitem['MediaType'],refitem['Path'])
+                break

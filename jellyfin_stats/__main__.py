@@ -5,6 +5,7 @@ from jellyfin_stats.stats.basic import BasicStats
 from jellyfin_stats.stats.combinations import CombinationsStats
 from jellyfin_stats.stats.specific import SpecificStats
 from jellyfin_stats.process.search import SearchExpr
+from jellyfin_stats.process.remux_targets import RemuxTargets
 from jellyfin_stats.common import DEBUG
 
 from pathlib import Path
@@ -12,6 +13,9 @@ import pandas as pd
 import pkgutil
 import argparse
 import os.path
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 class SplitArgs(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
@@ -22,7 +26,9 @@ class Expr(argparse.Action):
         setattr(namespace, self.dest, list(map(lambda v:SearchExpr(v),values)))
 
 if __name__ == "__main__":
- 
+    logger = logging.getLogger('main')
+
+    logger.info('Starting...')
 
     parser = argparse.ArgumentParser(description='Make some pretty stats about your Jellyfin library.')
     
@@ -47,7 +53,12 @@ if __name__ == "__main__":
     search_parser.add_argument('-o', '--output-file', default=Path("./search_results.txt"), metavar="FILE", type=Path, help="The output file (TXT, CSV, XLSX, HTML, MARKDOWN, SQL, JSON, PICKLE, PARQUET) make sure to install required dependencies.")
     
     search_parser.add_argument('expr', nargs='+', metavar="EXPR", action=Expr, help="Multiple (AND) base.<col>=value or streams.<col>=value")
-    
+
+    remux_parser = subparsers.add_parser("remux-targets", description="Searches processed data to find potential remux targets.")
+    remux_parser.add_argument('-i', '--input-dir', default=Path("."), metavar="DIR", type=Path, help="The input directory.")
+    remux_parser.add_argument('-o', '--output-file', default=Path("./remux_targets.txt"), metavar="FILE", type=Path, help="The output file (TXT, CSV, XLSX, HTML, MARKDOWN, SQL, JSON, PICKLE, PARQUET) make sure to install required dependencies.")
+    remux_parser.add_argument('-l', '--languages', default="eng,en,jpn,ja,kor,ko", metavar="lang1,lang2", help="Comma seperated list of acceptable language codes.")
+        
     args = parser.parse_args()
 
     if args.command == 'gatherdata':
@@ -118,6 +129,55 @@ if __name__ == "__main__":
             on="IdIdx",
             suffixes = ('', '_stream'),
             validate="one_to_many")
+
+        print(merged)
+
+        if args.output_file:
+            print(f"Writing result to {args.output_file}")
+            if args.output_file.suffix == '.csv':
+                merged.to_csv(args.output_file)
+            elif args.output_file.suffix == '.xlsx':
+                merged.to_excel(args.output_file)
+            elif args.output_file.suffix == '.html' or args.output_file.suffix == '.htm':
+                merged.to_html(args.output_file)
+            elif args.output_file.suffix == '.json':
+                merged.to_json(args.output_file)
+            elif args.output_file.suffix == '.md':
+                merged.to_markdown(args.output_file)
+            elif args.output_file.suffix == '.sql':
+                merged.to_sql(args.output_file)
+            elif args.output_file.suffix == '.pkl' or args.output_file.suffix == '.pickle':
+                merged.to_pickle(args.output_file)
+            elif args.output_file.suffix == '.parquet':
+                merged.to_parquet(args.output_file)
+            else:
+                merged.to_string(args.output_file)
+    elif args.command == 'remux-targets':
+        data = JellyfinData.load(args.input_dir)
+
+        data = DataProcessor(data)
+
+        data.process()
+        
+        #df_streams_grouped = data.df_streams.groupby(level="Id")
+
+        if DEBUG:
+            print("Left DF:\n",data.df)
+            print("Right DF:\n",data.df_streams)
+
+        merged = pd.merge(
+            data.df[0:100],
+            data.df_streams,
+            how="inner",
+            on="IdIdx",
+            suffixes = ('', '_stream'),
+            validate="one_to_many")
+        
+        merged.drop(merged.columns.difference(['Id','Path','Language','Type_stream','DisplayTitle','Type','Index','IsDefault','IsExternal','IsForced']), axis=1, inplace=True)
+            
+        rt = RemuxTargets(args.languages.split(','))
+
+        merged = rt.apply(merged)
 
         print(merged)
 

@@ -49,14 +49,11 @@ class JellyfinData():
         self.df_streams = self.df_streams.convert_dtypes()
 
     def dump(self, outputdir:Path):
-
-        print("Items duplicated:\n", self.df[self.df.index.duplicated(keep=False)].sort_index())
-        print("Streams duplicated:\n",self.df_streams[self.df_streams.index.duplicated(keep=False)].sort_index())
         outputdir.mkdir(parents=True,exist_ok=True)
         self.df.to_pickle(outputdir / "base.pkl")
-        self.df.to_json(outputdir / "base.json", indent=2, orient='columns')
+        self.df.to_json(outputdir / "base.json", indent=2, orient='table')
         self.df_streams.to_pickle(outputdir / "streams.pkl")
-        self.df_streams.to_json(outputdir / "streams.json", indent=2, orient='columns')
+        self.df_streams.to_json(outputdir / "streams.json", indent=2, orient='table')
 
     @classmethod
     def load(cls, inputdir:Path):

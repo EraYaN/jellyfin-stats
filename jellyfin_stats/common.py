@@ -1,15 +1,15 @@
 DEBUG=False
 
 single_item_kinds = [
-"Audio",
+#"Audio",
 "AudioBook",
 "Book",
 "Episode",
 "Movie",
 "MusicVideo",
 "Photo",
-"Program",
-"Recording",
+#"Program",
+#"Recording",
 "Trailer",
 "Video"
 ]
