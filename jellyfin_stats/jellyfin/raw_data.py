@@ -38,17 +38,18 @@ class JellyfinRawData():
             response = requests.get(f'{self.hostname}/Users/{self.user_id}/Items?IncludeItemTypes={itemtype}&Recursive=True&startIndex={start_index}&limit=0', auth=self.auth)
             if response:
                 payload = response.json()
+                print("Items payload:\n", payload)
                 total = payload['TotalRecordCount']
                 if total > 0:
                     pbar = tqdm(total=total, desc=f"Loading {itemtype}", unit='items', unit_scale=True, leave=True, dynamic_ncols=True)
                     pbar.update(0)
                     while total > start_index:
-                        #print(f"Getting {itemtype} from {start_index} to {start_index+limit}")
+                        pbar.write(f"Getting {itemtype} from {start_index} to {start_index+limit}")
                         response = requests.get(f'{self.hostname}/Users/{self.user_id}/Items?IncludeItemTypes={itemtype}&Recursive=True&Fields=MediaStreams,Path&startIndex={start_index}&limit={limit}&enableTotalRecordCount=false', auth=self.auth)
                         if response:
                             payload = response.json()
                             items.extend(payload['Items'])
-                            start_index += limit
+                            start_index += len(payload['Items'])
                             pbar.update(len(payload['Items']))
                         else:
                             break

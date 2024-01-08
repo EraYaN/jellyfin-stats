@@ -10,6 +10,7 @@ class CombinationsStats():
 
         self.combinations_streams = [
             ['Type', 'Height'],
+            ['Type', 'Language'],
             ['Type', 'TimeBase'],
             ['Type', 'Codec', 'Profile']
         ]

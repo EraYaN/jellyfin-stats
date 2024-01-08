@@ -31,7 +31,7 @@ class JellyfinData():
             if self.df is None:
                 self.df = pd.DataFrame(processed, columns=self.columns, index=index)
             else:
-                self.df = self.df.append(pd.DataFrame(processed, columns=self.columns, index=index),sort=True)
+                self.df = pd.concat([self.df,pd.DataFrame(processed, columns=self.columns, index=index)],sort=True)
 
             flat_streamlist = [{**item, self.index_col:sublist[self.index_col]} for sublist in raw_data_source.all_items[itemtype] if 'MediaStreams' in sublist for item in sublist['MediaStreams']]
             index_streams_id = [x[self.index_col] for x in flat_streamlist]
@@ -43,15 +43,20 @@ class JellyfinData():
             if self.df_streams is None:
                 self.df_streams = pd.DataFrame(processed_streams, columns=self.columns_streams, index=index_streams)
             else:
-                self.df_streams = self.df_streams.append(pd.DataFrame(processed_streams, columns=self.columns_streams, index=index_streams), sort=True)
+                self.df_streams = pd.concat([self.df_streams, pd.DataFrame(processed_streams, columns=self.columns_streams, index=index_streams)], sort=True)
                 
         self.df = self.df.convert_dtypes()
         self.df_streams = self.df_streams.convert_dtypes()
 
     def dump(self, outputdir:Path):
+
+        print("Items duplicated:\n", self.df[self.df.index.duplicated(keep=False)].sort_index())
+        print("Streams duplicated:\n",self.df_streams[self.df_streams.index.duplicated(keep=False)].sort_index())
         outputdir.mkdir(parents=True,exist_ok=True)
         self.df.to_pickle(outputdir / "base.pkl")
+        self.df.to_json(outputdir / "base.json", indent=2, orient='columns')
         self.df_streams.to_pickle(outputdir / "streams.pkl")
+        self.df_streams.to_json(outputdir / "streams.json", indent=2, orient='columns')
 
     @classmethod
     def load(cls, inputdir:Path):
